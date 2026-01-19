@@ -3,7 +3,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+# Try to load .env file, but don't fail if it doesn't exist or has encoding issues
+try:
+    load_dotenv(encoding='utf-8')
+except (UnicodeDecodeError, FileNotFoundError):
+    # If .env file has encoding issues or doesn't exist, continue without it
+    # Environment variables can still be set manually or via system
+    pass
 
 class Config:
     """Flask API Configuration"""

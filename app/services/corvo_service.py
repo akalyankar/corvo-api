@@ -3,36 +3,50 @@ import os
 from pathlib import Path
 import pandas as pd
 from typing import Optional, Dict, Any, List
+
+# Import Config from corvo-api first (before modifying sys.path)
 from app.config import Config
 
-# Add Corvo to Python path
+# Add Corvo to Python path BEFORE importing corvo modules
 CORVO_PATH = Config.CORVO_PATH
-if str(CORVO_PATH) not in sys.path:
-    sys.path.insert(0, str(CORVO_PATH))
+corvo_path_str = str(CORVO_PATH)
+if corvo_path_str not in sys.path:
+    sys.path.insert(0, corvo_path_str)
 
-# Import Corvo modules
-from app.utils import STEmbedding
-from app.normalization import normalize_vendors
-from app.categorization import (
-    categorize_transactions, 
-    build_pairs, 
-    build_corpus_from_taxonomy,
-    RuleEngine,
-    rule_based_classify,
-    ml_categorize,
-    llm_categorize
-)
-from app.database import get_milvus_collection
-from app.config import (
-    NEW_DB, MAIN_DB, EMBED_MODEL_PATH,
-    HDBSCAN_MIN_CLUSTER_SIZE, HDBSCAN_MIN_SAMPLES,
-    HDBSCAN_ALLOW_SINGLE_CLUSTER, VECTOR_TOP_K, VECTOR_MIN_SIM,
-    ALIAS_BOOST_STRONG, ALIAS_BOOST_WEAK, ALIAS_THRESHOLD,
-    TAXONOMY_FILE, IR_FILE, CATEGORY_BATCH_SIZE, CATEGORY_TOP_K,
-    CATEGORY_USE_ML, CATEGORY_USE_LLM, CATEGORY_VENDOR_COL, CATEGORY_DESC_COL,
-    CLUSTER_CONFIDENCE_THRESHOLD, NORMALIZATION_CONFIDENCE_THRESHOLD,
-    USE_OUTLIER_SCORES, NOISE_BASELINE_CONFIDENCE
-)
+# Temporarily remove corvo-api's 'app' module from sys.modules to avoid conflicts
+# Save it first so we can restore if needed
+_api_app_module = sys.modules.get('app')
+if 'app' in sys.modules:
+    del sys.modules['app']
+
+# Now import from corvo system's app module
+try:
+    from app.utils import STEmbedding
+    from app.normalization import normalize_vendors
+    from app.categorization import (
+        categorize_transactions, 
+        build_pairs, 
+        build_corpus_from_taxonomy,
+        RuleEngine,
+        rule_based_classify,
+        ml_categorize,
+        llm_categorize
+    )
+    from app.database import get_milvus_collection
+    from app.config import (
+        NEW_DB, MAIN_DB, EMBED_MODEL_PATH,
+        HDBSCAN_MIN_CLUSTER_SIZE, HDBSCAN_MIN_SAMPLES,
+        HDBSCAN_ALLOW_SINGLE_CLUSTER, VECTOR_TOP_K, VECTOR_MIN_SIM,
+        ALIAS_BOOST_STRONG, ALIAS_BOOST_WEAK, ALIAS_THRESHOLD,
+        TAXONOMY_FILE, IR_FILE, CATEGORY_BATCH_SIZE, CATEGORY_TOP_K,
+        CATEGORY_USE_ML, CATEGORY_USE_LLM, CATEGORY_VENDOR_COL, CATEGORY_DESC_COL,
+        CLUSTER_CONFIDENCE_THRESHOLD, NORMALIZATION_CONFIDENCE_THRESHOLD,
+        USE_OUTLIER_SCORES, NOISE_BASELINE_CONFIDENCE
+    )
+finally:
+    # Restore corvo-api's app module if it existed
+    if _api_app_module is not None:
+        sys.modules['app'] = _api_app_module
 
 
 class CorvoService:

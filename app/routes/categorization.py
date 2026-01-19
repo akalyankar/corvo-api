@@ -474,7 +474,7 @@ def get_taxonomy_schema():
         
         return jsonify(TaxonomySchemaResponse(
             success=True,
-            schema=schema['L0_categories'],
+            schema=schema['L0_categories'],  # Using alias 'schema' for API compatibility
             total_categories=schema['total_categories'],
             total_rules=schema['total_rules'],
             message="Taxonomy schema retrieved successfully"

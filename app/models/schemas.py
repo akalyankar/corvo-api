@@ -97,8 +97,11 @@ class ProcessResponse(BaseModel):
 class TaxonomySchemaResponse(BaseModel):
     """Response with taxonomy schema"""
     success: bool
-    schema: Dict[str, Any]
+    schema_data: Dict[str, Any] = Field(..., alias='schema')
     total_categories: int
     total_rules: int
     message: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
 
