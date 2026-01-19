@@ -16,8 +16,11 @@ if corvo_path_str not in sys.path:
 # Temporarily remove corvo-api's 'app' module from sys.modules to avoid conflicts
 # Save it first so we can restore if needed
 _api_app_module = sys.modules.get('app')
+_api_config_module = sys.modules.get('app.config')
 if 'app' in sys.modules:
     del sys.modules['app']
+if 'app.config' in sys.modules:
+    del sys.modules['app.config']
 
 # Now import from corvo system's app module
 try:
@@ -41,12 +44,15 @@ try:
         TAXONOMY_FILE, IR_FILE, CATEGORY_BATCH_SIZE, CATEGORY_TOP_K,
         CATEGORY_USE_ML, CATEGORY_USE_LLM, CATEGORY_VENDOR_COL, CATEGORY_DESC_COL,
         CLUSTER_CONFIDENCE_THRESHOLD, NORMALIZATION_CONFIDENCE_THRESHOLD,
-        USE_OUTLIER_SCORES, NOISE_BASELINE_CONFIDENCE
+        USE_OUTLIER_SCORES, NOISE_BASELINE_CONFIDENCE,
+        MILVUS_BATCH  # Added for vectordb.py
     )
 finally:
     # Restore corvo-api's app module if it existed
     if _api_app_module is not None:
         sys.modules['app'] = _api_app_module
+    if _api_config_module is not None:
+        sys.modules['app.config'] = _api_config_module
 
 
 class CorvoService:
@@ -67,17 +73,18 @@ class CorvoService:
         if self._initialized:
             return
         
-        print(f"Initializing CorvoService...")
-        print(f"Corvo path: {CORVO_PATH}")
+        print(f"Initializing CorvoService...", flush=True)
+        print(f"Corvo path: {CORVO_PATH}", flush=True)
         
         # Initialize embedder
         model_path = CORVO_PATH / EMBED_MODEL_PATH
         if not model_path.exists():
             raise FileNotFoundError(f"Embedding model not found: {model_path}")
         
-        print(f"Loading embedding model from: {model_path}")
+        print(f"Loading embedding model from: {model_path}", flush=True)
+        print("This may take several minutes...", flush=True)
         self._embedder = STEmbedding(str(model_path))
-        print(f"Embedding model loaded. Dimension: {self._embedder.embedding_dimension}")
+        print(f"Embedding model loaded. Dimension: {self._embedder.embedding_dimension}", flush=True)
         
         self._initialized = True
     
