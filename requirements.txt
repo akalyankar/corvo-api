@@ -1,0 +1,35 @@
+# Flask and API dependencies
+Flask==3.0.0
+flask-cors==4.0.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+Werkzeug==3.0.1
+
+# Data processing
+pandas>=2.0.0
+numpy==2.3.3
+
+# All Corvo dependencies
+sentence-transformers[onnx]
+embeddings
+torch
+datasets>=2.0.0
+transformers[torch]
+unidecode
+emoji
+langchain
+langgraph
+langchain-openai
+hdbscan
+scikit-learn
+pydantic
+tqdm
+umap-learn
+rapidfuzz
+llama-cpp-python
+pymilvus
+accelerate>=0.26.0
+boto3>=1.28.0
+botocore>=1.31.0
+
+
