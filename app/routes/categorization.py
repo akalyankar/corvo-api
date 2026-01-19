@@ -21,13 +21,33 @@ def categorize():
         data = request.get_json()
         req = CategorizeRequest(**data)
         
-        df = pd.DataFrame([t.dict() for t in req.transactions])
+        # Convert transactions to DataFrame and map field names
+        records = []
+        for t in req.transactions:
+            record = t.dict()
+            # Map gl_description to GL_DESCRIPTION if needed
+            if 'gl_description' in record and record['gl_description']:
+                record['GL_DESCRIPTION'] = record['gl_description']
+            elif 'description' in record and record['description'] and 'GL_DESCRIPTION' not in record:
+                record['GL_DESCRIPTION'] = record['description']
+            records.append(record)
+        
+        df = pd.DataFrame(records)
+        
+        # Use GL_DESCRIPTION if description_column is not explicitly set or is default
+        desc_col = req.description_column
+        if desc_col == "GL_DESCRIPTION" and 'GL_DESCRIPTION' not in df.columns:
+            # Try to map from gl_description or description
+            if 'gl_description' in df.columns:
+                df['GL_DESCRIPTION'] = df['gl_description']
+            elif 'description' in df.columns:
+                df['GL_DESCRIPTION'] = df['description']
         
         start_time = time.time()
         result_df = corvo_service.categorize_transactions(
             df=df,
             vendor_col=req.vendor_column,
-            description_col=req.description_column,
+            description_col=desc_col,
             taxonomy_file=req.taxonomy_file,
             ir_file=req.ir_file,
             batch_size=req.batch_size,
